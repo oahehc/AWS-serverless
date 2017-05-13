@@ -1,0 +1,9 @@
+* {
+    font-family: 'calibri', '微軟正黑體';
+    font-size: 1.2rem;
+}
+
+#message {
+    margin-top: 20px;
+    color: gray;
+}

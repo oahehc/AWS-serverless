@@ -1,0 +1,13 @@
+{
+  "name": "AWS-serverless-oahehc",
+  "version": "1.0.0",
+  "description": "a basic web application base on AWS serverless structure",
+  "main": "index.js",
+  "repository": "git@github.com:oahehc/AWS-serverless.git",
+  "author": "oahehc <oahehc@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "browser-sync": "^2.18.8",
+    "gulp": "^3.9.1"
+  }
+}
