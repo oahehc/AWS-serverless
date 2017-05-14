@@ -2,8 +2,8 @@
 const sys = {
     awsRegion: 'us-east-1',
     poolData: {
-        UserPoolId: 'us-east-1_2YjLtIZTO',
-        ClientId: '20544safmce2spepr9b521qdlb',
+        UserPoolId: 'us-east-1_2YxxxxxxO',
+        ClientId: '20544xxxxxxxxxxxxxxxdlb',
     },
 };
 console.log(AWS);
