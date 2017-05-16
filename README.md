@@ -1,67 +1,77 @@
 # AWS-serverless-example
-this is a basic web application base on AWS serverless structure with below function.
-- sign up with email confirmation
+This is a basic web application apply AWS serverless structure including below function.
+- sign up + email confirmation
 - sign in / sign out
-- data create/query by user
+- data create/query after user sign in
 
 
 ---
-## The AWS service has been used in this example 
-- Cognito: 
-- API gateway: 
-- Lambda: 
-- dynamoDB: 
-- S3: 
+## AWS service has been used in this example 
+- Cognito: user DB / auth control
+- API gateway: api for active lambda function 
+- Lambda: function for update dynamoDB data
+- DynamoDB: nosql DB
+- S3: DB for front-end page
 
+---
+## Scripts
+``` bash
+gulp serve     # start server by browser-sync 
+```
 
 ---
 ## DIR structure
-```
+``` bash
 ├── app/
-│   ├── index.html           # entrance page
+│   ├── index.html           # entrance
 │   ├── aws-sdk.min.js       # AWS SDK for cognito
-│   ├── main.js              # main function design 
-│   └── style.css            # ui design
-├── gulpfile.js              # for browser-sync
+│   ├── main.js              # main function 
+│   └── style.css            # style
+├── gulpfile.js              # browser-sync
 └── package.json             # dependencies
 ```
 
 
 ---
-## How To Start
-### <b>STEP 1 &nbsp;</b> create a basic structure for web application
-this example only use basic css and vanilla js, but you can apply any framework you familiar with.
-```
+# How To Start
+### <b>STEP 1 &nbsp;</b> create basic structure for web application
+This example only use basic css and vanilla js, but you can apply any framework you familiar with.
+``` bash
 ├── app/
-│ ├── index.html # entrance page
-│ ├── main.js # main function design
-│ └── style.css # ui design
+│ ├── index.html   # entrance
+│ ├── main.js      # main function
+│ └── style.css    # style
 ```
 
 ### <b>STEP 2 &nbsp;</b> include AWS SDK
-we can build SDK file by [AWS SDK builder](https://sdk.amazonaws.com/builder/js/) base on the service we need.<br>
-And we only need Cognito for this example because other service will be called by using API gateway.
-1. create SDK file and add to app folder
-2. include sdk in index.html
+1. Build SDK file by [AWS SDK builder](https://sdk.amazonaws.com/builder/js/) base on the service we need.
+And we only need Cognito for this example because we will apply API gateway to CRUD database.
+2. Add SDK file to app folder
+3. Include SDK in index.html
 ```
 <script src=”./aws-sdk.min.js”></script>
 ```
 
 ### <b>STEP 3 &nbsp;</b> create Cognito user pool
-1. follow [AWS document](http://docs.aws.amazon.com/zh_cn/cognito/latest/developerguide/getting-started-with-cognito-user-pools.html?shortFooter=true) to create cognito user pool.<br>
-In this example. we use two attribute - email and userId(custom attribute)
-2. after create user pool, add below data to main.js
+1. Follow [AWS document](http://docs.aws.amazon.com/zh_cn/cognito/latest/developerguide/create-new-user-pool-console-quickstart.html?shortFooter=true) to create cognito userpool. 
+    - (Name) naming userpool then click 'Step through settings'
+    - (Attributes) we use two attributes in this example - email and userId(custom attribute)
+    - (Verification) select email
+    - (App clients) create an client app, and we don't use client secret in this example
+![Imgur](http://i.imgur.com/esqAj9R.png)
+2. After we created userpool, add below data to main.js
 ```
 const sys = {
     awsRegion: 'us-east-1',
-    UserPoolId: 'us-east-1_2YxxxxxO',
-    ClientId: '20544xxxxxxxxxxxxxxxxxxdlb',
+    UserPoolId: 'us-east-1_D4Qga3XmA',
+    ClientId: '4lijvvq6lfm7i3hq8b883j714q',
 };
 ```
+=============
 
 ### <b>STEP 4 &nbsp;</b> create SignUp function in main.js
-1. add cognito sign up function base on [AWS SDK](https://github.com/aws/amazon-cognito-identity-js/)
-2. bind sign up function to button click event
+1. Add cognito sign up function base on [AWS SDK](https://github.com/aws/amazon-cognito-identity-js/)
+2. Bind sign up function to button click event
 ```
 
 ```
@@ -78,14 +88,14 @@ In this example, we will create one data in DynamoDB and a sub-folder in S3 for 
 
 ### <b>STEP 7 &nbsp;</b> create Cognito federated identities
 1. follow [AWS document](http://docs.aws.amazon.com/zh_cn/cognito/latest/developerguide/getting-started-with-identity-pools.html?shortFooter=true) to create cognito federated identities.<br>
-* ??? set Authenticated role in federated identities, to assign DynamoDB, 
-* add user pool information at Authentication providers
+* ??? set Authenticated role in federated identities, to assign DynamoDB, -> no need when using api gateway ???
+2. [AWS document](http://docs.aws.amazon.com/zh_cn/cognito/latest/developerguide/amazon-cognito-integrating-user-pools-with-identity-pools.html), add user pool information at Authentication providers
 
 ### <b>STEP 8 &nbsp;</b> follow STEP 4, create SignIn function in main.js
-* when we test sign in function, cognito will create token and save to cookies automatically.
+* when we test sign in function, cognito will create token and save to cookies automatically. [Reference: Cognito Token](http://docs.aws.amazon.com/zh_cn/cognito/latest/developerguide/amazon-cognito-user-pools-using-tokens-with-identity-providers.html)
 
 ### <b>STEP 9 &nbsp;</b> create API gateway for query DynamoDB data
-* we can set Authorization by user pool in API gateway, 
+* set API Authorization by user pool. 
 
 ### <b>STEP 10 &nbsp;</b> 
 ### <b>STEP 11 &nbsp;</b> 
