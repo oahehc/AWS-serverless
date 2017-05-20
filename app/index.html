@@ -10,11 +10,15 @@
 </head>
 
 <body>
-    <input type="email" name="email" placeholder="your email" id="email" autofocus>
-    <input type="password" name="password" placeholder="your password" id="password">
-    <input type="button" value="Sign In" id="signIn">
-    <input type="button" value="Sign Up" id="signUp">
-    <div id="message">test</div>
+    <input type="email" name="email" placeholder="Email" id="email" autofocus>
+    <input type="password" name="password" placeholder="Password" id="password">
+    <input type="text" name="validate" placeholder="Validate Code" id="validate">
+    <div class="btnGroup">
+        <input type="button" value="Sign In" id="signIn">
+        <input type="button" value="Sign Up" id="signUp">
+        <input type="button" value="Confirm" id="confirm">
+    </div>
+    <div id="message"></div>
     <script src="./aws-cognito-sdk.min.js"></script>
     <script src="./amazon-cognito-identity.min.js"></script>
     <!--<script src="./aws-sdk.js"></script>-->

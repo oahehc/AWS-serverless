@@ -68,27 +68,20 @@ In this example, we only use basic css and vanilla js, but you can apply any fra
     ![attribute](http://i.imgur.com/FNcj1o1.png)
     - preview all setting and create userpool
     ![userpool preview](http://i.imgur.com/esqAj9R.png)
-2. After we created userpool, add below data to main.js
+2. After create userpool, add below data to main.js for create userPool object
 ```
-const sys = {
-    awsRegion: 'us-east-1',
+const poolData = {
     UserPoolId: 'us-east-1_D4Qga3XmA',
     ClientId: '4lijvvq6lfm7i3hq8b883j714q',
 };
+const userPool = new AWSCognito.CognitoIdentityServiceProvider.CognitoUserPool(poolData);
 ```
 
 ----
 ### <b>STEP 4 &nbsp;</b> create SignUp function in main.js
-1. Add cognito sign up function base on [AWS SDK](https://github.com/aws/amazon-cognito-identity-js/)
+1. Add cognito sign up function<br>Reference [AWS SDK](https://github.com/aws/amazon-cognito-identity-js/)
 ```
 function signUp(email, password) {
-    // create user pool object
-    const poolData = {
-        UserPoolId: sys.UserPoolId,
-        ClientId: sys.ClientId,
-    };
-    const userPool = new AWSCognito.CognitoIdentityServiceProvider.CognitoUserPool(poolData);
-
     // add attriubute base on our setting when we create user pool at AWS console
     const attributeList = [];
     const dataEmail = {
@@ -105,56 +98,141 @@ function signUp(email, password) {
     attributeList.push(attributeUserId);
 
     // sign up to user pool
-    userPool.signUp(email, password, attributeList, null, (err, result) => {
-        if (err) console.log('signUp ERROR', err);
-        else console.log('signUp SUCCESS', result);
-    });
+    return new Promise((resolve, reject) => {
+        userPool.signUp(email, password, attributeList, null, (err, result) => {
+            if (err) reject(err);
+            else resolve(result);
+        });
+    })
 }
 ```
-2. Bind sign up function to button
+2. Bind sign up function to button<br>
+*Because confirmBtn isn't display at begin, so we add event listerner to parent div, and use switch to decide which function should be excuted
 ```
 const signUpBtn = document.querySelector('#signUp');
+const signInBtn = document.querySelector('#signIn');
+const confirmBtn = document.querySelector('#confirm');
 const emailInput = document.querySelector('#email');
 const passwordInput = document.querySelector('#password');
-signUpBtn.addEventListener('click', () => {
-    if (emailInput.value && passwordInput.value) signUp(emailInput.value, passwordInput.value);
+const validateInput = document.querySelector('#validate');
+const erroMsg = document.querySelector('#message');
+const btnGroup = document.querySelector('.btnGroup');
+btnGroup.addEventListener('click', (e) => {
+    switch (e.target.id) {
+        case 'signUp':
+            console.log('click signUpBtn');
+            if (emailInput.value && passwordInput.value) {
+                signUp(emailInput.value, passwordInput.value).then((result) => {
+                    // show validation input & button if sign up success
+                    confirmBtn.style.display = 'block';
+                    validateInput.style.display = 'block';
+                    validateInput.focus();
+                    signUpBtn.style.display = 'none';
+                    signInBtn.style.display = 'none';
+                    erroMsg.innerHTML = 'Validation code has been send to your mailbox, please fill the code to finish the sign up process';
+                }).catch((err) => {
+                    // show error msg if sign up fail
+                    erroMsg.innerHTML = err;
+                })
+            } else {
+                erroMsg.innerHTML = 'email & password can\'t been empty';
+            }
+            break
+    }
 })
 ```
-*when you test signUp function, you will notice Cognito already deal with many scenario for us - like duplicate email or password constraint etc.
+*When you test signUp function, you will notice Cognito already deal with many scenario for us - like duplicate email or password constraint etc.
 ![error](http://i.imgur.com/x6aXFYM.png)
-*we can check user list at AWS console.
+*We can check user list at AWS console.
 ![userList](http://i.imgur.com/rpttUZy.png)
 
 
 ----
-### <b>STEP 5 &nbsp;</b> follow STEP 4, create EmailConfirmation fucntion in main.js
+### <b>STEP 5 &nbsp;</b> create EmailConfirmation fucntion in main.js
+1. create confrim function 
 ```
+function confirm(email, code) {
+    const userData = {
+        Username: email,
+        Pool: userPool,
+    };
+    return new Promise((resolve, reject) => {
+        const cognitoUser = new AWSCognito.CognitoIdentityServiceProvider.CognitoUser(userData);
+        cognitoUser.confirmRegistration(code, true, (err, result) => {
+            if (err) reject(err);
+            else resolve(result);
+        });
+    })
+}
+```
+2. add confirm case
+```
+case 'confirm':
+    console.log('click confirmBtn');
+    if (emailInput.value && validateInput.value) {
+        confirm(emailInput.value, validateInput.value).then((result) => {
+            // clear input for user to sign in
+            validateInput.style.display = 'none';
+            confirmBtn.style.display = 'none';
+            signInBtn.style.display = 'block';
+            emailInput.value = '';
+            passwordInput.value = '';
+            emailInput.focus();
+            erroMsg.innerHTML = 'Your account has been created, please use your email and password to sign in';
+        }).catch((err) => {
+            erroMsg.innerHTML = err;
+        })
+    } else {
+        erroMsg.innerHTML = 'email & validation code can\'t been empty';
+    }
+    break
 ```
 
 ----
-### <b>STEP 6 &nbsp;</b> Use Cognito triggers to initial user data
-1. Pre sign-up: for generate an unique userId for each user
-2. Post confirmation: for initail new user when account pass email confirmation.<br>
-In this example, we will create one data in DynamoDB and a sub-folder in S3 for each new user.
-* After finish STEP 1~6, we should able to test register and email confirmation now. you will notice that AWS cognito already help us to deal many senario like sign up with duplicate email.
+### <b>STEP 6 &nbsp;</b> Use Cognito triggers to initial user data in DynamoDB
+We use 'Post confirmation' trigger Lambda function to create user data in DynamoDB when account pass email confirmation.
+1. create lambda funciton
+2. add to Cognito trigger
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+----
 ### <b>STEP 7 &nbsp;</b> create Cognito federated identities
 1. follow [AWS document](http://docs.aws.amazon.com/zh_cn/cognito/latest/developerguide/getting-started-with-identity-pools.html?shortFooter=true) to create cognito federated identities.<br>
 * ??? set Authenticated role in federated identities, to assign DynamoDB, -> no need when using api gateway ???
 2. [AWS document](http://docs.aws.amazon.com/zh_cn/cognito/latest/developerguide/amazon-cognito-integrating-user-pools-with-identity-pools.html), add user pool information at Authentication providers
 
+----
 ### <b>STEP 8 &nbsp;</b> follow STEP 4, create SignIn function in main.js
 * when we test sign in function, cognito will create token and save to cookies automatically. [Reference: Cognito Token](http://docs.aws.amazon.com/zh_cn/cognito/latest/developerguide/amazon-cognito-user-pools-using-tokens-with-identity-providers.html)
 
+----
 ### <b>STEP 9 &nbsp;</b> create API gateway for query DynamoDB data
 * set API Authorization by user pool. 
 
+----
 ### <b>STEP 10 &nbsp;</b> 
+----
 ### <b>STEP 11 &nbsp;</b> 
+----
 ### <b>STEP 12 &nbsp;</b> 
+----
 ### <b>STEP 13 &nbsp;</b> 
 * for more function like re-send confirmation code, forget password, refresh token ect., please check [HERE](https://github.com/aws/amazon-cognito-identity-js/)
 
 ### Remark
-1. this example focus on AWS serverless structure, only with minimize design and didn't apply any font-end framework.
-2. use ES6 and without apply babel, so must test at the browser supply ES6 (suggest: Chrome)
+We use ES6 and without apply babel, so it must been test at browser witch supply ES6.

@@ -3,7 +3,34 @@
     font-size: 1.2rem;
 }
 
+body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    height: 100vh;
+}
+
+input {
+    margin: 5px;
+}
+
+#email,
+#password,
+#validate {
+    text-align: center;
+    min-width: 280px;
+}
+
+#validate,
+#confirm {
+    display: none;
+}
+
 #message {
     margin-top: 20px;
+    width: 100%;
     color: gray;
+    border: 1px dashed gray;
+    text-align: center;
 }
