@@ -143,6 +143,7 @@ btnGroup.addEventListener('click', (e) => {
 ```
 *When you test signUp function, you will notice Cognito already deal with many scenario for us - like duplicate email or password constraint etc.
 ![error](http://i.imgur.com/x6aXFYM.png)
+
 *We can check user list at AWS console.
 ![userList](http://i.imgur.com/rpttUZy.png)
 
@@ -191,8 +192,12 @@ case 'confirm':
 ----
 ### <b>STEP 6 &nbsp;</b> Use Cognito triggers to initial user data in DynamoDB
 We use 'Post confirmation' trigger Lambda function to create user data in DynamoDB when account pass email confirmation.
-1. create lambda funciton
-2. add to Cognito trigger
+1. create dynamoDB table at AWS console
+    - primary key: userId
+    - sort key: email
+![dynamoDB](http://i.imgur.com/0s6ITkj.png)
+2. create lambda function
+3. add lambda function to cognito trigger
 
 
 
