@@ -1,15 +1,15 @@
 # AWS-serverless-example
-This is a basic web application apply AWS serverless structure including below function.
+In this example, we build a basic web application base on AWS serverless structure.
+This application will include below function.
 - sign up + email confirmation
 - sign in / sign out
 - data create/query after user sign in
 
-
 ---
 ## AWS service has been used in this example 
 - Cognito: user DB / auth control
-- API gateway: api for active lambda function 
 - Lambda: function for update dynamoDB data
+- API gateway: create api for active lambda function 
 - DynamoDB: nosql DB
 - S3: DB for front-end page
 
@@ -35,30 +35,39 @@ gulp serve     # start server by browser-sync
 ---
 # How To Start
 ### <b>STEP 1 &nbsp;</b> create basic structure for web application
-This example only use basic css and vanilla js, but you can apply any framework you familiar with.
+In this example, we only use basic css and vanilla js, but you can apply any framework you like.
 ``` bash
 ├── app/
 │ ├── index.html   # entrance
 │ ├── main.js      # main function
 │ └── style.css    # style
 ```
-
+----
 ### <b>STEP 2 &nbsp;</b> include AWS SDK
-1. Build SDK file by [AWS SDK builder](https://sdk.amazonaws.com/builder/js/) base on the service we need.
-And we only need Cognito for this example because we will apply API gateway to CRUD database.
-2. Add SDK file to app folder
-3. Include SDK in index.html
+1. Download AWS SDK files 
+    - [aws-cognito-sdk.min.js](https://raw.githubusercontent.com/aws/amazon-cognito-identity-js/master/dist/aws-cognito-sdk.min.js)
+    - [amazon-cognito-identity.min.js](https://raw.githubusercontent.com/aws/amazon-cognito-identity-js/master/dist/amazon-cognito-identity.min.js)
+2. Include SDK in index.html
+```    
+<script src="/path/to/aws-cognito-sdk.min.js"></script>
+<script src="/path/to/amazon-cognito-identity.min.js"></script>
 ```
-<script src=”./aws-sdk.min.js”></script>
-```
+3. Build SDK file by [AWS SDK builder](https://sdk.amazonaws.com/builder/js/) if you need other AWS service.<br>
+*Because we will apply API gateway to access database. And API gateway can auth by Cognito. So we don't need addition SDK in this example.
 
+
+----
 ### <b>STEP 3 &nbsp;</b> create Cognito user pool
 1. Follow [AWS document](http://docs.aws.amazon.com/zh_cn/cognito/latest/developerguide/create-new-user-pool-console-quickstart.html?shortFooter=true) to create cognito userpool. 
     - (Name) naming userpool then click 'Step through settings'
     - (Attributes) we use two attributes in this example - email and userId(custom attribute)
     - (Verification) select email
-    - (App clients) create an client app, and we don't use client secret in this example
-![Imgur](http://i.imgur.com/esqAj9R.png)
+    - (App clients) create an client app<br>
+    *we clear Generate client secret because AWS JavaScript SDK does not support the app client secret, you can apply it when build mobile application.<br>
+    *make sure you have set read and write permission for custom attribute
+    ![attribute](http://i.imgur.com/FNcj1o1.png)
+    - preview all setting and create userpool
+    ![userpool preview](http://i.imgur.com/esqAj9R.png)
 2. After we created userpool, add below data to main.js
 ```
 const sys = {
@@ -67,19 +76,62 @@ const sys = {
     ClientId: '4lijvvq6lfm7i3hq8b883j714q',
 };
 ```
-=============
 
+----
 ### <b>STEP 4 &nbsp;</b> create SignUp function in main.js
 1. Add cognito sign up function base on [AWS SDK](https://github.com/aws/amazon-cognito-identity-js/)
-2. Bind sign up function to button click event
 ```
+function signUp(email, password) {
+    // create user pool object
+    const poolData = {
+        UserPoolId: sys.UserPoolId,
+        ClientId: sys.ClientId,
+    };
+    const userPool = new AWSCognito.CognitoIdentityServiceProvider.CognitoUserPool(poolData);
 
+    // add attriubute base on our setting when we create user pool at AWS console
+    const attributeList = [];
+    const dataEmail = {
+        Name: 'email',
+        Value: email,
+    };
+    const attributeEmail = new AWSCognito.CognitoIdentityServiceProvider.CognitoUserAttribute(dataEmail);
+    attributeList.push(attributeEmail);
+    const dataUserId = {
+        Name: 'custom:userId', // add custom prefix for custom attribute
+        Value: generateUUID(), // generate an unique id for each user
+    };
+    const attributeUserId = new AWSCognito.CognitoIdentityServiceProvider.CognitoUserAttribute(dataUserId);
+    attributeList.push(attributeUserId);
+
+    // sign up to user pool
+    userPool.signUp(email, password, attributeList, null, (err, result) => {
+        if (err) console.log('signUp ERROR', err);
+        else console.log('signUp SUCCESS', result);
+    });
+}
 ```
+2. Bind sign up function to button
+```
+const signUpBtn = document.querySelector('#signUp');
+const emailInput = document.querySelector('#email');
+const passwordInput = document.querySelector('#password');
+signUpBtn.addEventListener('click', () => {
+    if (emailInput.value && passwordInput.value) signUp(emailInput.value, passwordInput.value);
+})
+```
+*when you test signUp function, you will notice Cognito already deal with many scenario for us - like duplicate email or password constraint etc.
+![error](http://i.imgur.com/x6aXFYM.png)
+*we can check user list at AWS console.
+![userList](http://i.imgur.com/rpttUZy.png)
 
+
+----
 ### <b>STEP 5 &nbsp;</b> follow STEP 4, create EmailConfirmation fucntion in main.js
 ```
 ```
 
+----
 ### <b>STEP 6 &nbsp;</b> Use Cognito triggers to initial user data
 1. Pre sign-up: for generate an unique userId for each user
 2. Post confirmation: for initail new user when account pass email confirmation.<br>
