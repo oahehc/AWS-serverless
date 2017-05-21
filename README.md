@@ -192,28 +192,67 @@ case 'confirm':
 ----
 ### <b>STEP 6 &nbsp;</b> Use Cognito triggers to initial user data in DynamoDB
 We use 'Post confirmation' trigger Lambda function to create user data in DynamoDB when account pass email confirmation.
-1. create dynamoDB table at AWS console
+1. create dynamoDB table by using AWS console
     - primary key: userId
     - sort key: email
+    *you can click tutorial btn in AWS console to check how to create the table
 ![dynamoDB](http://i.imgur.com/0s6ITkj.png)
-2. create lambda function
-3. add lambda function to cognito trigger
+2. create lambda function by using AWS console
+    - Blueprint: Blank function
+    - Configure triggers: leave empty (we will set trigger at cognito later)
+    - Configure function
+    ![lambda](http://i.imgur.com/e8ylA62.png)
+    - paste the code below to 'Lambda function code'
+        ```
+        "use strict";
+        const AWS = require('aws-sdk');
+        const TableName = 'aws-serverless'; // dynamodb table name
+        const region = 'us-east-1'; // dynamodb region : http://docs.aws.amazon.com/zh_cn/sns/latest/dg/sms_supported-countries.html
+        exports.handler = function (event, context, callback) {
+            console.log(event.request);
+            if (event.triggerSource === 'PostConfirmation_ConfirmSignUp') { // limit this function only exercute by cognito Post confirmation trigger
+                const dynamoConfig = {
+                    sessionToken: process.env.AWS_SESSION_TOKEN,
+                    region,
+                };
+                const docClient = new AWS.DynamoDB.DocumentClient(dynamoConfig);
+                let params = {
+                    TableName,
+                    Item: {
+                        userId: event.request.userAttributes['userId'], // get userId and email from event which trigger by cognito
+                        email: event.request.userAttributes['email'],
+                        createTimeStamp: new Date().getTime(),
+                        message: [],
+                    },
+                };
+                docClient.put(params, function (err, data) {
+                    if (err) {
+                        console.log('update table error', err); // console.log in lambda function will log to cloud watch for tracking and debugging
+                        return callback(err, null);
+                    } else {
+                        callback(null, event);
+                    }
+                });
+            } else {
+                return callback("Invalid trigger source.", null);
+            }
+        };
+        ```
+    - add role for lambda function (lambda execute + access dynamoDB)
+    ![role for lambda](http://i.imgur.com/AW0p25N.png)
 
+    *we can create a role in IAM console, for easy to demo, we apply full access for dynamoDB here.<br> 
+    It will be better to generate policy base on the function we need in our application. [policy generator](https://awspolicygen.s3.amazonaws.com/policygen.html)
+    ![iam](http://i.imgur.com/7x7gHQb.png)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+3. add lambda function to cognito triggers
+    - choose triggers in cognito userpoll console
+    - select to lambda function we just created in Post confirmation
+    ![iam](http://i.imgur.com/2wnHT3A.png)
+*If lambda function doesn't execute as our expection, we can check the logs in cloudwatch
+![cloudwatch](http://i.imgur.com/cojhCDM.png)
+*If every work correctly, we will see a new data been created after a user finish sign up process.
+![dynamodb addItem](http://i.imgur.com/JwFstoB.png)
 
 ----
 ### <b>STEP 7 &nbsp;</b> create Cognito federated identities
