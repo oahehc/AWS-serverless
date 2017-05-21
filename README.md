@@ -23,8 +23,8 @@ gulp serve     # start server by browser-sync
 ## DIR structure
 ``` bash
 ├── app/
-│   ├── index.html                         # entrance
-│   ├── user.html                          # user page
+│   ├── index.html                         # sign up/sign in page
+│   ├── user.html                          # main page
 │   ├── amazon-cognito-identity.min.js     # AWS SDK for cognito
 │   ├── aws-cognito-sdk.min.js             # AWS SDK for cognito
 │   ├── main.js                            # main function 
@@ -39,8 +39,8 @@ gulp serve     # start server by browser-sync
 ### <b>STEP 1 &nbsp;</b> create basic structure for web application
 In this example, we only use basic css and vanilla js, but you can apply any framework you like.
 ``` bash
-├── index.html           # entrance
-├── user.html            # user page
+├── index.html           # sign up/sign in page
+├── user.html            # main page
 ├── main.js              # main function 
 └── style.css            # style
 ```
@@ -312,6 +312,48 @@ function signIn(email, password) {
 
 ----
 ### <b>STEP 9 &nbsp;</b> create API gateway for query DynamoDB data
+1. create Lambda function for query dynamoDB data
+```
+"use strict";
+const AWS = require('aws-sdk');
+const TableName = 'aws-serverless';
+const region = 'us-east-1';
+exports.handler = function (event, context, callback) {
+    if (!event.userId) callback('no userId', null);
+    const dynamodb = new AWS.DynamoDB({
+        apiVersion: '2012-08-10',
+        region,
+    });
+    dynamodb.scan({
+        TableName,
+        ExpressionAttributeValues: {
+            ':userId': {
+                S: event.userId,
+            },
+        },
+        FilterExpression: "userId = :userId",
+    }, (err, data) => {
+        if (err) {
+            console.log('query user list fail', err);
+            callback(err, null);
+        } else {
+            console.log('query user result', data);
+            callback(null, data.Items);
+        }
+    });
+};
+```
+
+2. create API gateway at AWS console
+    - create New API
+    ![API create](http://i.imgur.com/CASEa3a.png)
+    - create resource (Actrions > Create Resource), and enable CORS
+    ![API resource](http://i.imgur.com/Np25owR.png)
+    - create POST method (Actrions > Create Method), and apply the lambda function we just created
+    ![API method](http://i.imgur.com/rDaURnN.png)
+    - deployed API
+3. implement API in user.html
+
 * set API Authorization by user pool. 
 
 ----
