@@ -1,3 +1,5 @@
+/* common */
+
 * {
     font-family: 'calibri', '微軟正黑體';
     font-size: 1.2rem;
@@ -10,6 +12,9 @@ body {
     flex-direction: column;
     height: 100vh;
 }
+
+
+/* index page */
 
 input {
     margin: 5px;
@@ -33,4 +38,11 @@ input {
     color: gray;
     border: 1px dashed gray;
     text-align: center;
+}
+
+
+/* main page*/
+
+#user {
+    font-weight: 500;
 }

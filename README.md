@@ -166,7 +166,7 @@ function confirm(email, code) {
     })
 }
 ```
-2. add confirm case
+2. add confirm case in click event
 ```
 case 'confirm':
     console.log('click confirmBtn');
@@ -256,27 +256,75 @@ We use 'Post confirmation' trigger Lambda function to create user data in Dynamo
 
 ----
 ### <b>STEP 7 &nbsp;</b> create Cognito federated identities
-1. follow [AWS document](http://docs.aws.amazon.com/zh_cn/cognito/latest/developerguide/getting-started-with-identity-pools.html?shortFooter=true) to create cognito federated identities.<br>
-* ??? set Authenticated role in federated identities, to assign DynamoDB, -> no need when using api gateway ???
-2. [AWS document](http://docs.aws.amazon.com/zh_cn/cognito/latest/developerguide/amazon-cognito-integrating-user-pools-with-identity-pools.html), add user pool information at Authentication providers
+*we can use cognito federated identities to control the responsibility for sign in user
+1. create cognito federated identities. [AWS document](http://docs.aws.amazon.com/zh_cn/cognito/latest/developerguide/getting-started-with-identity-pools.html?shortFooter=true)
+    - click Manage Federated Identities in Cognito console
+    ![federatedId](http://i.imgur.com/XfCyMOq.png)
+    - create new identity pool
+    - add userPool as authentication providers
+    ![federatedId create](http://i.imgur.com/cXN6DQV.png)
+2. add IdentityPoolId to main.js
+    - Federated identities > Dashboard > Edit identity pool
+    - clone identity pool id in edit panel
+    ![federatedId edit](http://i.imgur.com/4aW32ya.png)
+    - add to main.js
+    ```
+    const IdentityPoolId = 'us-east-1:e1ee252a-bfdd-484f-bc35-eac21e8aac8f';
+    ```
 
 ----
-### <b>STEP 8 &nbsp;</b> follow STEP 4, create SignIn function in main.js
-* when we test sign in function, cognito will create token and save to cookies automatically. [Reference: Cognito Token](http://docs.aws.amazon.com/zh_cn/cognito/latest/developerguide/amazon-cognito-user-pools-using-tokens-with-identity-providers.html)
+### <b>STEP 8 &nbsp;</b> create SignIn function in main.js
+1. create signIn function
+```
+function signIn(email, password) {
+    var authenticationData = {
+        Username: email,
+        Password: password,
+    };
+    var authenticationDetails = new AWSCognito.CognitoIdentityServiceProvider.AuthenticationDetails(authenticationData);
+    var userData = {
+        Username: email,
+        Pool: userPool,
+    };
+    return new Promise((resolve, reject) => {
+        const cognitoUser = new AWSCognito.CognitoIdentityServiceProvider.CognitoUser(userData);
+        cognitoUser.authenticateUser(authenticationDetails, {
+            onSuccess(result) {
+                console.log('signIn success', result);
+                resolve(result);
+            },
+            onFailure(err) {
+                console.log('signIn error', err);
+                reject(err);
+            },
+        });
+    })
+}
+```
+2. add signIn case in click event 
+```
+```
+*token will automatically be added to localStorage after sign in. [Reference: Cognito Token](http://docs.aws.amazon.com/zh_cn/cognito/latest/developerguide/amazon-cognito-user-pools-using-tokens-with-identity-providers.html)
+![localStorage](http://i.imgur.com/iYqVH1l.png?1)
 
 ----
 ### <b>STEP 9 &nbsp;</b> create API gateway for query DynamoDB data
 * set API Authorization by user pool. 
 
 ----
-### <b>STEP 10 &nbsp;</b> 
+### <b>STEP 10 &nbsp;</b> sign out
 ----
-### <b>STEP 11 &nbsp;</b> 
+### <b>STEP 11 &nbsp;</b> forget password
 ----
-### <b>STEP 12 &nbsp;</b> 
+### <b>STEP 12 &nbsp;</b> resend confirmation code
 ----
 ### <b>STEP 13 &nbsp;</b> 
 * for more function like re-send confirmation code, forget password, refresh token ect., please check [HERE](https://github.com/aws/amazon-cognito-identity-js/)
 
 ### Remark
-We use ES6 and without apply babel, so it must been test at browser witch supply ES6.
+We use ES6 and without apply babel, so it must been test at browser which supply ES6.
+
+
+### TBC
+* Authenticated role in federated identities -> no need when using api gateway ???
+* signIn : just save token to localStorage / update AWS.config.credentials / AWS.config.credentials.refresh?
