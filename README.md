@@ -23,12 +23,14 @@ gulp serve     # start server by browser-sync
 ## DIR structure
 ``` bash
 ├── app/
-│   ├── index.html           # entrance
-│   ├── aws-sdk.min.js       # AWS SDK for cognito
-│   ├── main.js              # main function 
-│   └── style.css            # style
-├── gulpfile.js              # browser-sync
-└── package.json             # dependencies
+│   ├── index.html                         # entrance
+│   ├── user.html                          # user page
+│   ├── amazon-cognito-identity.min.js     # AWS SDK for cognito
+│   ├── aws-cognito-sdk.min.js             # AWS SDK for cognito
+│   ├── main.js                            # main function 
+│   └── style.css                          # style
+├── gulpfile.js                            # browser-sync
+└── package.json                           # dependencies
 ```
 
 
@@ -37,11 +39,12 @@ gulp serve     # start server by browser-sync
 ### <b>STEP 1 &nbsp;</b> create basic structure for web application
 In this example, we only use basic css and vanilla js, but you can apply any framework you like.
 ``` bash
-├── app/
-│ ├── index.html   # entrance
-│ ├── main.js      # main function
-│ └── style.css    # style
+├── index.html           # entrance
+├── user.html            # user page
+├── main.js              # main function 
+└── style.css            # style
 ```
+
 ----
 ### <b>STEP 2 &nbsp;</b> include AWS SDK
 1. Download AWS SDK files 

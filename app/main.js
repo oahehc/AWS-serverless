@@ -206,7 +206,7 @@ btnGroup.addEventListener('click', (e) => {
             console.log('click signInBtn');
             if (emailInput.value && passwordInput.value) {
                 signIn(emailInput.value, passwordInput.value).then((result) => {
-                    window.location = `${window.location.origin }/main.html?user=${emailInput.value}`; // relocate to main page
+                    window.location = `${window.location.origin }/user.html?user=${emailInput.value}`; // relocate to main page
                 }).catch((err) => {
                     erroMsg.innerHTML = err;
                 })
