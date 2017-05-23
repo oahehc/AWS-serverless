@@ -11,6 +11,7 @@
 
 <body>
     <h3>Welcome <span id="user"></span> !</h3>
+    <div id="userList"></div>
     <script>
         function getUrlVars(url) {
             var hash;
@@ -22,9 +23,26 @@
             }
             return myJson;
         }
+        // show user mail
         const userSpan = document.querySelector('#user');
         const urlVarObj = getUrlVars(window.location.href);
         userSpan.innerHTML = urlVarObj.user;
+
+        // use api to get all user info in dynamoDB
+        const apiURL = 'https://h3m5ar8z6k.execute-api.us-east-1.amazonaws.com/DEV';
+        fetch(`${apiURL}/queryuser`, {
+                method: 'POST',
+            }).then(result => result.json())
+            .then((users) => {
+                console.log(users);
+                const userList = users.reduce((list, userObj) => {
+                    list +=
+                        `${userObj.email.S} @ ${new Date(parseInt(userObj.createTimeStamp.N,10)).toDateString()}`;
+                    return list
+                }, '');
+                const userListDiv = document.querySelector('#userList');
+                userListDiv.innerHTML = userList;
+            })
     </script>
 </body>
 

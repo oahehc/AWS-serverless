@@ -312,27 +312,21 @@ function signIn(email, password) {
 
 ----
 ### <b>STEP 9 &nbsp;</b> create API gateway for query DynamoDB data
-1. create Lambda function for query dynamoDB data
+1. create Lambda function for scan dynamoDB to get all user data<br>
+*noramlly we should only allow manager account to access user's list
 ```
 "use strict";
 const AWS = require('aws-sdk');
 const TableName = 'aws-serverless';
 const region = 'us-east-1';
 exports.handler = function (event, context, callback) {
-    if (!event.userId) callback('no userId', null);
     const dynamodb = new AWS.DynamoDB({
         apiVersion: '2012-08-10',
         region,
     });
     dynamodb.scan({
         TableName,
-        ExpressionAttributeValues: {
-            ':userId': {
-                S: event.userId,
-            },
-        },
-        FilterExpression: "userId = :userId",
-    }, (err, data) => {
+    }, function (err, data) {
         if (err) {
             console.log('query user list fail', err);
             callback(err, null);
@@ -343,7 +337,6 @@ exports.handler = function (event, context, callback) {
     });
 };
 ```
-
 2. create API gateway at AWS console
     - create New API
     ![API create](http://i.imgur.com/CASEa3a.png)
@@ -351,10 +344,38 @@ exports.handler = function (event, context, callback) {
     ![API resource](http://i.imgur.com/Np25owR.png)
     - create POST method (Actrions > Create Method), and apply the lambda function we just created
     ![API method](http://i.imgur.com/rDaURnN.png)
-    - deployed API
+    ![API integration](http://i.imgur.com/NtUvil7.png)
+    - set API Authorization [AWS document](http://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-integrate-with-cognito.html)<br>
+        (a). create Authorizers 
+        ![API authorizer](http://i.imgur.com/HzD9PgZ.png)
+        (b). click method request in queryuser POST method
+        ![API method request](http://i.imgur.com/gCY2BE2.png)
+        (c). select authorizer in method request
+        ![API add authorizer](http://i.imgur.com/55BKBo5.png)
+    - deployed API and copy invoke URL
+    ![API deploy](http://i.imgur.com/nW8KTh5.png)
 3. implement API in user.html
+    - add Invoke URL to user.html
+    ```
+    const apiURL = 'https://h3m5ar8z6k.execute-api.us-east-1.amazonaws.com/DEV';
+    ```
+    - add fetch to user.html
+    ```
+    fetch(`${apiURL}/queryuser`, {
+            method: 'POST',
+        }).then(result => result.json())
+        .then((users) => {
+            console.log(users);
+            const userList = users.reduce((list, userObj) => {
+                list +=
+                    `${userObj.email.S} @ ${new Date(parseInt(userObj.createTimeStamp.N,10)).toDateString()}`;
+                return list
+            }, '');
+            const userListDiv = document.querySelector('#userList');
+            userListDiv.innerHTML = userList;
+        })
+    ```
 
-* set API Authorization by user pool. 
 
 ----
 ### <b>STEP 10 &nbsp;</b> sign out
