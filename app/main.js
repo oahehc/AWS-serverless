@@ -1,12 +1,10 @@
-// variable
-const userPoolRegion = 'us-east-1';
-const poolData = {
-    UserPoolId: 'us-east-1_D4Qga3XmA',
-    ClientId: '4lijvvq6lfm7i3hq8b883j714q',
-};
-const userPool = new AWSCognito.CognitoIdentityServiceProvider.CognitoUserPool(poolData);
-const IdentityPoolId = 'us-east-1:e1ee252a-bfdd-484f-bc35-eac21e8aac8f';
-
+// // variable
+// const userPoolRegion = 'us-east-1';
+// const poolData = {
+//     UserPoolId: 'us-east-1_D4Qga3XmA',
+//     ClientId: '4lijvvq6lfm7i3hq8b883j714q',
+// };
+// const userPool = new AWSCognito.CognitoIdentityServiceProvider.CognitoUserPool(poolData);
 
 // function
 function generateUUID() {
@@ -75,66 +73,8 @@ function signIn(email, password) {
         cognitoUser.authenticateUser(authenticationDetails, {
             onSuccess(result) {
                 console.log('signIn success', result);
+                window.localStorage.setItem('awsToken', result.getIdToken().getJwtToken()); // save token at localStorage
                 resolve(result);
-                // const cognitoIdp = `cognito-idp.<${userPoolRegion}>.amazonaws.com/<${poolData.UserPoolId}>`;
-                // AWS.config.credentials = new AWSCognito.CognitoIdentityCredentials({
-                //     IdentityPoolId,
-                //     Logins: {
-                //         [cognitoIdp]: result.getIdToken().getJwtToken(),
-                //     }
-                // });
-
-                // const login = `cognito-idp.${sys.cognitoRegion}.amazonaws.com/${sys.poolData.UserPoolId}`;
-                // AWS.config.region = sys.awsRegion;
-                // AWS.config.credentials = new AWS.CognitoIdentityCredentials({
-                //     IdentityPoolId: sys.IdentityPoolID,
-                // });
-                // AWS.config.credentials.params.Logins = {};
-                // AWS.config.credentials.params.Logins[login] = result.getIdToken().getJwtToken();
-                // AWS.config.credentials.refresh((err) => {
-                //     if (err) {
-                //         log('Error in authenticating to AWS ' + err);
-                //         resolve({
-                //             errcode: 999,
-                //             msg: err,
-                //         });
-                //     } else {
-                //         log('identityId is: ' + AWS.config.credentials.identityId);
-                //         // query vendorId from DynamoDB
-                //         const dynamodb = new AWS.DynamoDB({
-                //             apiVersion: '2012-08-10',
-                //             region: sys.awsRegion,
-                //         });
-                //         dynamodb.batchGetItem({
-                //             RequestItems: {
-                //                 [sys.vendorTableName]: {
-                //                     Keys: [{
-                //                         "email": {
-                //                             S: email,
-                //                         },
-                //                     }],
-                //                 },
-                //             },
-                //         }, (err, data) => {
-                //             if (err) {
-                //                 log('dynamoDB query vendorId error:', err);
-                //             } else {
-                //                 const vendorId = data.Responses[sys.vendorTableName][0].vendorId.S;
-                //                 // save account info to localstorage
-                //                 window.localStorage.setItem('accountInfo', JSON.stringify({
-                //                     user: email,
-                //                     vendorId,
-                //                     identityToken: result.getIdToken().getJwtToken(),
-                //                 }));
-                //                 log('token expireTime', AWS.config.credentials.expireTime);
-                //                 resolve({
-                //                     errcode: 0,
-                //                     msg: null,
-                //                 });
-                //             }
-                //         });
-                //     }
-                // });
             },
             onFailure(err) {
                 console.log('signIn error', err);
@@ -199,7 +139,7 @@ btnGroup.addEventListener('click', (e) => {
             console.log('click signInBtn');
             if (emailInput.value && passwordInput.value) {
                 signIn(emailInput.value, passwordInput.value).then((result) => {
-                    window.location = `${window.location.origin }/user.html?user=${emailInput.value}`; // relocate to main page
+                    window.location = `${window.location.origin}/user.html?user=${emailInput.value}`; // relocate to user page
                 }).catch((err) => {
                     erroMsg.innerHTML = err;
                 })
@@ -213,7 +153,5 @@ btnGroup.addEventListener('click', (e) => {
 // bind enter event for test only
 window.addEventListener('keydown', (e) => {
     console.log(e, e.keyCode);
-    if (e.keyCode === 13) {
-        signInBtn.click();
-    }
+    if (e.keyCode === 13) signInBtn.click();
 })

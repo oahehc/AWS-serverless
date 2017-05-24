@@ -1,16 +1,19 @@
 # AWS-serverless-example
-In this example, we build a basic web application base on AWS serverless structure.
+In this example, we will build a basic web application base on AWS serverless structure.
 This application will include below function.
 - sign up + email confirmation
-- sign in / sign out
-- data create/query after user sign in
+- sign in
+- data query for sign in user
+- sign out
 
 ---
-## AWS service has been used in this example 
-- Cognito: user DB / auth control
-- Lambda: function for update dynamoDB data
-- API gateway: create api for active lambda function 
+## Below are the AWS services which been used in this example 
+- Cognito: 
+    - user pool: Database for sign up user
+    - federated identity: auth control
 - DynamoDB: nosql DB
+- Lambda: function for query/update dynamoDB data
+- API gateway: create api for active lambda function 
 - S3: DB for front-end page
 
 ---
@@ -28,6 +31,7 @@ gulp serve     # start server by browser-sync
 │   ├── amazon-cognito-identity.min.js     # AWS SDK for cognito
 │   ├── aws-cognito-sdk.min.js             # AWS SDK for cognito
 │   ├── main.js                            # main function 
+│   ├── variable.js                        # save variable for AWS service
 │   └── style.css                          # style
 ├── gulpfile.js                            # browser-sync
 └── package.json                           # dependencies
@@ -71,7 +75,7 @@ In this example, we only use basic css and vanilla js, but you can apply any fra
     ![attribute](http://i.imgur.com/FNcj1o1.png)
     - preview all setting and create userpool
     ![userpool preview](http://i.imgur.com/esqAj9R.png)
-2. After create userpool, add below data to main.js for create userPool object
+2. After create userpool, add below data to variable.js for create userPool object
 ```
 const poolData = {
     UserPoolId: 'us-east-1_D4Qga3XmA',
@@ -294,6 +298,7 @@ function signIn(email, password) {
         cognitoUser.authenticateUser(authenticationDetails, {
             onSuccess(result) {
                 console.log('signIn success', result);
+                window.localStorage.setItem('awsToken', result.getIdToken().getJwtToken()); // save token at localStorage
                 resolve(result);
             },
             onFailure(err) {
@@ -306,6 +311,18 @@ function signIn(email, password) {
 ```
 2. add signIn case in click event 
 ```
+case 'signIn':
+    console.log('click signInBtn');
+    if (emailInput.value && passwordInput.value) {
+        signIn(emailInput.value, passwordInput.value).then((result) => {
+            window.location = `${window.location.origin }/user.html?user=${emailInput.value}`; // relocate to user page
+        }).catch((err) => {
+            erroMsg.innerHTML = err;
+        })
+    } else {
+        erroMsg.innerHTML = 'email & password code can\'t been empty';
+    }
+    break
 ```
 *token will automatically be added to localStorage after sign in. [Reference: Cognito Token](http://docs.aws.amazon.com/zh_cn/cognito/latest/developerguide/amazon-cognito-user-pools-using-tokens-with-identity-providers.html)
 ![localStorage](http://i.imgur.com/iYqVH1l.png?1)
@@ -376,21 +393,42 @@ exports.handler = function (event, context, callback) {
         })
     ```
 
+----
+### <b>STEP 10 &nbsp;</b> create sign out function in user.html
+1. create sign out function
+```
+function signOut() {
+    const userData = {
+        Username: urlVarObj.user,
+        Pool: userPool,
+    };
+    return new Promise((resolve, reject) => {
+        const cognitoUser = new AWSCognito.CognitoIdentityServiceProvider.CognitoUser(userData);
+        cognitoUser.signOut();
+        window.localStorage.removeItem('awsToken');
+        resolve();
+    })
+}
+```
+2. bind to sign out button
+```
+const signOutBtn = document.querySelector('#signOut');
+signOutBtn.addEventListener('click', () => {
+    signOut().then(() => {
+        window.location = `${window.location.origin}`; // back to sign in page
+    })
+})
+```
 
 ----
-### <b>STEP 10 &nbsp;</b> sign out
-----
-### <b>STEP 11 &nbsp;</b> forget password
-----
-### <b>STEP 12 &nbsp;</b> resend confirmation code
-----
-### <b>STEP 13 &nbsp;</b> 
-* for more function like re-send confirmation code, forget password, refresh token ect., please check [HERE](https://github.com/aws/amazon-cognito-identity-js/)
+### <b>STEP 11 &nbsp;</b> Deploy to S3
+*This example focus on AWS service, so we don't apply pre-process like uglify, minify..., you should add it for official project.
+1. create S3 bucket
+2. upload out code
+3.  
 
+
+----
 ### Remark
-We use ES6 and without apply babel, so it must been test at browser which supply ES6.
-
-
-### TBC
-* Authenticated role in federated identities -> no need when using api gateway ???
-* signIn : just save token to localStorage / update AWS.config.credentials / AWS.config.credentials.refresh?
+* For complete our app, we need more function like re-send confirmation code, forget password, change password, refresh token ect.., we can check [HERE](https://github.com/aws/amazon-cognito-identity-js/) to find out how to create those function.
+* We use ES6 and without apply babel, so this example need to been tested at browser which supply ES6.

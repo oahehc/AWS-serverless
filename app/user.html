@@ -10,13 +10,17 @@
 </head>
 
 <body>
+    <button id="signOut">Sign Out</button>
     <h3>Welcome <span id="user"></span> !</h3>
     <div id="userList"></div>
+    <script src="./aws-cognito-sdk.min.js"></script>
+    <script src="./amazon-cognito-identity.min.js"></script>
+    <script src="./variable.js"></script>
     <script>
         function getUrlVars(url) {
-            var hash;
-            var myJson = {};
-            var hashes = url.slice(url.indexOf('?') + 1).split('&');
+            let hash;
+            let myJson = {};
+            let hashes = url.slice(url.indexOf('?') + 1).split('&');
             for (var i = 0; i < hashes.length; i++) {
                 hash = hashes[i].split('=');
                 myJson[hash[0]] = hash[1];
@@ -32,6 +36,9 @@
         const apiURL = 'https://h3m5ar8z6k.execute-api.us-east-1.amazonaws.com/DEV';
         fetch(`${apiURL}/queryuser`, {
                 method: 'POST',
+                headers: {
+                    Authorization: window.localStorage.getItem('awsToken'),
+                },
             }).then(result => result.json())
             .then((users) => {
                 console.log(users);
@@ -43,6 +50,26 @@
                 const userListDiv = document.querySelector('#userList');
                 userListDiv.innerHTML = userList;
             })
+
+        // sign out function
+        function signOut() {
+            const userData = {
+                Username: urlVarObj.user,
+                Pool: userPool,
+            };
+            return new Promise((resolve, reject) => {
+                const cognitoUser = new AWSCognito.CognitoIdentityServiceProvider.CognitoUser(userData);
+                cognitoUser.signOut();
+                window.localStorage.removeItem('awsToken');
+                resolve();
+            })
+        }
+        const signOutBtn = document.querySelector('#signOut');
+        signOutBtn.addEventListener('click', () => {
+            signOut().then(() => {
+                window.location = `${window.location.origin}`; // back to sign in page
+            })
+        })
     </script>
 </body>
 
