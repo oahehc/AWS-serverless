@@ -436,4 +436,4 @@ signOutBtn.addEventListener('click', () => {
 ----
 ### Remark
 * For complete our app, we need more function like re-send confirmation code, forget password, change password, refresh token ect.., you can check [HERE](https://github.com/aws/amazon-cognito-identity-js/) to find out how to create those function.
-* This exampleWe use ES6 and without apply babel, so need to been tested at browser which supply ES6.
+* This example use ES6 and without apply babel, so need to been tested at browser which supply ES6.
