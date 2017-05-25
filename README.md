@@ -422,13 +422,18 @@ signOutBtn.addEventListener('click', () => {
 
 ----
 ### <b>STEP 11 &nbsp;</b> Deploy to S3
-*This example focus on AWS service, so we don't apply pre-process like uglify, minify..., you should add it for official project.
 1. create S3 bucket
-2. upload out code
-3.  
+![s3_createBucket](http://i.imgur.com/MgQpUPL.png)
+2. upload our code and public<br>
+*For official project, you might want to apply the pre-processing like uglify, minify etc.. before upload your code
+![s3_createBucket](http://i.imgur.com/slnUwoS.png)
+3. set static web hosting and get the endpoint link
+![s3_createBucket](http://i.imgur.com/9CkQVUG.png)
+![s3_createBucket](http://i.imgur.com/XEbWAyu.png)
+4. click the endpoint link, we can see and test the web application we have created
 
 
 ----
 ### Remark
-* For complete our app, we need more function like re-send confirmation code, forget password, change password, refresh token ect.., we can check [HERE](https://github.com/aws/amazon-cognito-identity-js/) to find out how to create those function.
-* We use ES6 and without apply babel, so this example need to been tested at browser which supply ES6.
+* For complete our app, we need more function like re-send confirmation code, forget password, change password, refresh token ect.., you can check [HERE](https://github.com/aws/amazon-cognito-identity-js/) to find out how to create those function.
+* This exampleWe use ES6 and without apply babel, so need to been tested at browser which supply ES6.
