@@ -359,17 +359,17 @@ exports.handler = function (event, context, callback) {
     ![API create](http://i.imgur.com/CASEa3a.png)
     - create resource (Actrions > Create Resource), and enable CORS
     ![API resource](http://i.imgur.com/Np25owR.png)
-    - create POST method (Actrions > Create Method), and apply the lambda function we just created
+    - create POST method (Actrions > Create Method), and apply the lambda function we just created<br>
     ![API method](http://i.imgur.com/rDaURnN.png)
     ![API integration](http://i.imgur.com/NtUvil7.png)
     - set API Authorization [AWS document](http://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-integrate-with-cognito.html)<br>
-        (a). create Authorizers 
-        ![API authorizer](http://i.imgur.com/HzD9PgZ.png)
-        (b). click method request in queryuser POST method
-        ![API method request](http://i.imgur.com/gCY2BE2.png)
-        (c). select authorizer in method request
-        ![API add authorizer](http://i.imgur.com/55BKBo5.png)
-    - deployed API and copy invoke URL
+        (a). create Authorizers<br>
+        ![API authorizer](http://i.imgur.com/HzD9PgZ.png)<br>
+        (b). click method request in queryuser POST method<br>
+        ![API method request](http://i.imgur.com/gCY2BE2.png)<br>
+        (c). select authorizer in method request<br>
+        ![API add authorizer](http://i.imgur.com/55BKBo5.png)<br>
+    - deployed API and copy invoke URL<br>
     ![API deploy](http://i.imgur.com/nW8KTh5.png)
 3. implement API in user.html
     - add Invoke URL to user.html
@@ -422,12 +422,12 @@ signOutBtn.addEventListener('click', () => {
 
 ----
 ### <b>STEP 11 &nbsp;</b> Deploy to S3
-1. create S3 bucket
+1. create S3 bucket<br>
 ![s3_createBucket](http://i.imgur.com/MgQpUPL.png)
 2. upload our code and public<br>
 *For official project, you might want to apply the pre-processing like uglify, minify etc.. before upload your code
 ![s3_createBucket](http://i.imgur.com/slnUwoS.png)
-3. set static web hosting and get the endpoint link
+3. set static web hosting and get the endpoint link<br>
 ![s3_createBucket](http://i.imgur.com/9CkQVUG.png)
 ![s3_createBucket](http://i.imgur.com/XEbWAyu.png)
 4. click the endpoint link, we can see and test the web application we have created
